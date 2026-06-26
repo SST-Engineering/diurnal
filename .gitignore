@@ -1,0 +1,25 @@
+# Xcode
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.xcarchive
+
+# SwiftPM
+.build/
+*.resolved
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Simulator & device data
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods (not used, but guard anyway)
+Pods/
