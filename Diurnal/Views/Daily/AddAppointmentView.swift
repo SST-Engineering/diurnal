@@ -208,23 +208,25 @@ struct ParchmentRecurrencePicker: View {
     ]
 
     var body: some View {
-        HStack(spacing: 6) {
-            ForEach(options, id: \.0) { value, label in
-                Button { rule = value } label: {
-                    Text(label)
-                        .font(.custom("Georgia", size: 12))
-                        .foregroundStyle(rule == value ? pageColor : inkColor.opacity(0.70))
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(rule == value ? inkColor.opacity(0.72) : inkColor.opacity(0.07))
-                        )
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(options, id: \.0) { value, label in
+                    Button { rule = value } label: {
+                        Text(label)
+                            .font(.custom("Georgia", size: 12))
+                            .foregroundStyle(rule == value ? pageColor : inkColor.opacity(0.70))
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(rule == value ? inkColor.opacity(0.72) : inkColor.opacity(0.07))
+                            )
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 56)
         }
-        .padding(.horizontal, 56)
         .frame(height: kLineSpacing)
     }
 }

@@ -21,7 +21,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
+                #if os(macOS)
                 .frame(minWidth: 420, minHeight: 320)
+                #endif
         }
 //        .sheet(isPresented: $showIconExporter) {
 //            IconExporterView()

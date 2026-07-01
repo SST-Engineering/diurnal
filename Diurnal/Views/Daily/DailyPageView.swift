@@ -128,7 +128,7 @@ struct DailyPageView: View {
     private var iPhoneLayout: some View {
         VStack(spacing: 0) {
             Picker("", selection: $iPhonePage) {
-                Text("Tasks").tag(0)
+                Text("Day").tag(0)
                 Text("Notes").tag(1)
             }
             .pickerStyle(.segmented)
@@ -542,12 +542,14 @@ struct BookTaskRow: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
                 .onTapGesture { showDetail = true }
+                #if os(macOS)
                 .onHover { hovering in
                     if hovering && status == "notStarted" {
                         moveToDate = task.pageDate
                         showMoveDate = true
                     }
                 }
+                #endif
                 .onLongPressGesture {
                     if status == "notStarted" {
                         moveToDate = task.pageDate

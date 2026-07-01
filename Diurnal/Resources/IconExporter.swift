@@ -1,3 +1,4 @@
+#if os(macOS)
 import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
@@ -113,3 +114,4 @@ struct IconExporterView: View {
         }
     }
 }
+#endif
