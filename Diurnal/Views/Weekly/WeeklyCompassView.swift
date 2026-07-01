@@ -61,9 +61,9 @@ struct WeeklyCompassView: View {
 
                     Divider().padding(.horizontal, 56).opacity(0.3)
 
-                    // Sharpening the Saw
+                    // Learning and Renewal
                     VStack(alignment: .leading, spacing: 4) {
-                        BookSectionHeader(title: "Sharpening the Saw", icon: "leaf.fill")
+                        BookSectionHeader(title: "Learning and Renewal", icon: "leaf.fill")
                         Text("Personal renewal across four dimensions")
                             .font(.custom("Georgia", size: 12))
                             .foregroundStyle(inkColor.opacity(0.40))
@@ -72,22 +72,22 @@ struct WeeklyCompassView: View {
                     .padding(.horizontal, 56)
 
                     renewalField(
-                        title: "Physical", icon: "figure.run",
+                        title: "Training / Sport", icon: "figure.run",
                         color: Color(red: 0.20, green: 0.55, blue: 0.25),
                         text: Bindable(compass).physicalRenewal
                     )
                     renewalField(
-                        title: "Social / Emotional", icon: "heart.fill",
+                        title: "Social", icon: "heart.fill",
                         color: Color(red: 0.75, green: 0.20, blue: 0.35),
                         text: Bindable(compass).socialRenewal
                     )
                     renewalField(
-                        title: "Mental", icon: "brain",
+                        title: "Emotional", icon: "brain",
                         color: Color(red: 0.35, green: 0.25, blue: 0.65),
                         text: Bindable(compass).mentalRenewal
                     )
                     renewalField(
-                        title: "Spiritual", icon: "sparkles",
+                        title: "Growth", icon: "sparkles",
                         color: Color(red: 0.65, green: 0.50, blue: 0.10),
                         text: Bindable(compass).spiritualRenewal
                     )
