@@ -14,6 +14,10 @@ final class Appointment {
     var isAllDay: Bool = false
     // "" = no recurrence | "daily" | "weekly" | "monthly" | "yearly"
     var recurrenceRule: String = ""
+    // For weekly recurrence: Calendar weekday ints (1=Sun…7=Sat). Empty = use origin weekday.
+    var recurrenceDays: [Int] = []
+    // Optional stop date — recurrence ends on or before this day.
+    var recurrenceUntil: Date? = nil
 
     init(pageDate: Date, startTime: Date, endTime: Date, title: String) {
         self.id = UUID()

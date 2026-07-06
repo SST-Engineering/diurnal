@@ -13,6 +13,9 @@ struct AddAppointmentView: View {
     @State private var notes = ""
     @State private var isAllDay = false
     @State private var recurrenceRule = ""
+    @State private var recurrenceDays: [Int] = []
+    @State private var hasEndDate = false
+    @State private var recurrenceUntil = Date()
 
     init(date: Date) {
         self.date = date
@@ -82,17 +85,21 @@ struct AddAppointmentView: View {
                         // ── Time ────────────────────────────────────────
                         ParchmentFieldLabel(text: "Time")
 
-                        HStack(spacing: 0) {
-                            Text("All Day")
-                                .font(.custom("Georgia", size: 14))
-                                .foregroundStyle(inkColor.opacity(0.75))
-                            Spacer()
-                            Toggle("", isOn: $isAllDay)
-                                .labelsHidden()
-                                .tint(spineColor)
+                        Button { isAllDay.toggle() } label: {
+                            HStack(spacing: 0) {
+                                Text("All Day")
+                                    .font(.custom("Georgia", size: 14))
+                                    .foregroundStyle(inkColor.opacity(0.75))
+                                Spacer()
+                                Image(systemName: isAllDay ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(isAllDay ? spineColor : inkColor.opacity(0.30))
+                            }
+                            .padding(.horizontal, 56)
+                            .frame(height: kLineSpacing)
+                            .contentShape(Rectangle())
                         }
-                        .padding(.horizontal, 56)
-                        .frame(height: kLineSpacing)
+                        .buttonStyle(.plain)
 
                         if !isAllDay {
                             HStack(spacing: 0) {
@@ -145,6 +152,14 @@ struct AddAppointmentView: View {
                         ParchmentFieldLabel(text: "Repeat")
                         ParchmentRecurrencePicker(rule: $recurrenceRule)
 
+                        if recurrenceRule == "weekly" {
+                            ParchmentWeekdayPicker(selectedDays: $recurrenceDays)
+                        }
+
+                        if !recurrenceRule.isEmpty {
+                            ParchmentEndDateRow(hasEndDate: $hasEndDate, endDate: $recurrenceUntil)
+                        }
+
                         Divider().padding(.horizontal, 56).opacity(0.2).padding(.top, 4)
 
                         // ── Notes ───────────────────────────────────────
@@ -188,9 +203,97 @@ struct AddAppointmentView: View {
         appt.notes = notes
         appt.isAllDay = isAllDay
         appt.recurrenceRule = recurrenceRule
+        appt.recurrenceDays = recurrenceRule == "weekly" ? recurrenceDays : []
+        appt.recurrenceUntil = hasEndDate ? recurrenceUntil : nil
         modelContext.insert(appt)
         try? modelContext.save()
         dismiss()
+    }
+}
+
+// MARK: - Weekday picker (appears when Weekly is selected)
+
+struct ParchmentWeekdayPicker: View {
+    @Binding var selectedDays: [Int]
+
+    // Calendar weekday integers: 1=Sun, 2=Mon … 7=Sat
+    private let days: [(Int, String)] = [
+        (2, "M"), (3, "T"), (4, "W"), (5, "T"), (6, "F"), (7, "S"), (1, "S")
+    ]
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text("On")
+                .font(.custom("Georgia", size: 12))
+                .foregroundStyle(inkColor.opacity(0.45))
+                .frame(width: 20)
+
+            ForEach(days, id: \.0) { value, label in
+                let selected = selectedDays.contains(value)
+                Button {
+                    if selected {
+                        selectedDays.removeAll { $0 == value }
+                    } else {
+                        selectedDays.append(value)
+                    }
+                } label: {
+                    Text(label)
+                        .font(.custom("Georgia", size: 12).bold())
+                        .foregroundStyle(selected ? pageColor : inkColor.opacity(0.65))
+                        .frame(width: 26, height: 26)
+                        .background(
+                            Circle()
+                                .fill(selected ? inkColor.opacity(0.72) : inkColor.opacity(0.07))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 56)
+        .frame(height: kLineSpacing)
+    }
+}
+
+// MARK: - End date row (appears for any non-none recurrence)
+
+struct ParchmentEndDateRow: View {
+    @Binding var hasEndDate: Bool
+    @Binding var endDate: Date
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Button { hasEndDate.toggle() } label: {
+                HStack(spacing: 0) {
+                    Text("Ends On")
+                        .font(.custom("Georgia", size: 14))
+                        .foregroundStyle(inkColor.opacity(0.75))
+                    Spacer()
+                    Image(systemName: hasEndDate ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 18))
+                        .foregroundStyle(hasEndDate ? spineColor : inkColor.opacity(0.30))
+                }
+                .padding(.horizontal, 56)
+                .frame(height: kLineSpacing)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if hasEndDate {
+                HStack(spacing: 0) {
+                    Text("Date")
+                        .font(.custom("Georgia", size: 14))
+                        .foregroundStyle(inkColor.opacity(0.55))
+                        .frame(width: 52, alignment: .leading)
+                    DatePicker("", selection: $endDate, displayedComponents: [.date])
+                        .labelsHidden()
+                        .environment(\.colorScheme, .light)
+                    Spacer()
+                }
+                .padding(.horizontal, 56)
+                .frame(height: kLineSpacing)
+            }
+        }
     }
 }
 

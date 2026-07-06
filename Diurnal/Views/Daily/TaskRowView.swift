@@ -123,7 +123,33 @@ struct TaskDetailView: View {
 
                         ParchmentFieldLabel(text: "Repeat")
                         ParchmentRecurrencePicker(rule: $task.recurrenceRule)
-                            .onChange(of: task.recurrenceRule) { _, _ in save() }
+                            .onChange(of: task.recurrenceRule) { _, _ in
+                                if task.recurrenceRule != "weekly" {
+                                    task.recurrenceDays = []
+                                }
+                                save()
+                            }
+
+                        if task.recurrenceRule == "weekly" {
+                            ParchmentWeekdayPicker(selectedDays: $task.recurrenceDays)
+                                .onChange(of: task.recurrenceDays) { _, _ in save() }
+                        }
+
+                        if !task.recurrenceRule.isEmpty {
+                            ParchmentEndDateRow(
+                                hasEndDate: Binding(
+                                    get: { task.recurrenceUntil != nil },
+                                    set: { on in
+                                        task.recurrenceUntil = on ? (task.recurrenceUntil ?? Date()) : nil
+                                        save()
+                                    }
+                                ),
+                                endDate: Binding(
+                                    get: { task.recurrenceUntil ?? Date() },
+                                    set: { task.recurrenceUntil = $0; save() }
+                                )
+                            )
+                        }
 
                         Divider().padding(.horizontal, 56).opacity(0.2).padding(.top, 4)
 

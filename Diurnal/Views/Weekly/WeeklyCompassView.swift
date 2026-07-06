@@ -24,7 +24,7 @@ struct WeeklyCompassView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            pageColor.ignoresSafeArea(.container, edges: .bottom)
+            pageColor.ignoresSafeArea()
 
             RuledLineShape()
                 .stroke(ruleColor, lineWidth: 0.5)

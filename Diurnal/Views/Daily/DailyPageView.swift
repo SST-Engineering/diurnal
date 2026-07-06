@@ -35,26 +35,36 @@ struct DailyPageView: View {
 
     private var tasks: [DailyTask] {
         allTasks
-            .filter { occursOn(date: date, pageDate: $0.pageDate, rule: $0.recurrenceRule) }
+            .filter { occursOn(date: date, pageDate: $0.pageDate, rule: $0.recurrenceRule,
+                               days: $0.recurrenceDays, until: $0.recurrenceUntil) }
             .sorted { ($0.priority, $0.number) < ($1.priority, $1.number) }
     }
 
     private var appointments: [Appointment] {
         allAppointments
-            .filter { occursOn(date: date, pageDate: $0.pageDate, rule: $0.recurrenceRule) }
+            .filter { occursOn(date: date, pageDate: $0.pageDate, rule: $0.recurrenceRule,
+                               days: $0.recurrenceDays, until: $0.recurrenceUntil) }
             .sorted { $0.startTime < $1.startTime }
     }
 
-    /// True if an item with the given pageDate and recurrenceRule should appear on `date`.
-    private func occursOn(date: Date, pageDate: Date, rule: String) -> Bool {
+    /// True if an item should appear on `date` given its recurrence settings.
+    private func occursOn(date: Date, pageDate: Date, rule: String,
+                          days: [Int] = [], until: Date? = nil) -> Bool {
         let cal = Calendar.current
         let origin = cal.startOfDay(for: pageDate)
         let target = cal.startOfDay(for: date)
         if rule.isEmpty { return origin == target }
         guard target >= origin else { return false }
+        // Stop date check
+        if let until = until, target > cal.startOfDay(for: until) { return false }
         switch rule {
         case "daily":   return true
-        case "weekly":  return cal.component(.weekday, from: target) == cal.component(.weekday, from: origin)
+        case "weekly":
+            if days.isEmpty {
+                return cal.component(.weekday, from: target) == cal.component(.weekday, from: origin)
+            } else {
+                return days.contains(cal.component(.weekday, from: target))
+            }
         case "monthly": return cal.component(.day,     from: target) == cal.component(.day,     from: origin)
         case "yearly":
             return cal.component(.month, from: target) == cal.component(.month, from: origin) &&

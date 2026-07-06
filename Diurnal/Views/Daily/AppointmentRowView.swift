@@ -111,18 +111,24 @@ struct AppointmentDetailView: View {
                         // ── Time ──────────────────────────────────────────
                         ParchmentFieldLabel(text: "Time")
 
-                        HStack(spacing: 0) {
-                            Text("All Day")
-                                .font(.custom("Georgia", size: 14))
-                                .foregroundStyle(inkColor.opacity(0.75))
-                            Spacer()
-                            Toggle("", isOn: $appointment.isAllDay)
-                                .labelsHidden()
-                                .tint(spineColor)
-                                .onChange(of: appointment.isAllDay) { _, _ in save() }
+                        Button {
+                            appointment.isAllDay.toggle()
+                            save()
+                        } label: {
+                            HStack(spacing: 0) {
+                                Text("All Day")
+                                    .font(.custom("Georgia", size: 14))
+                                    .foregroundStyle(inkColor.opacity(0.75))
+                                Spacer()
+                                Image(systemName: appointment.isAllDay ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 18))
+                                    .foregroundStyle(appointment.isAllDay ? spineColor : inkColor.opacity(0.30))
+                            }
+                            .padding(.horizontal, 56)
+                            .frame(height: kLineSpacing)
+                            .contentShape(Rectangle())
                         }
-                        .padding(.horizontal, 56)
-                        .frame(height: kLineSpacing)
+                        .buttonStyle(.plain)
 
                         if !appointment.isAllDay {
 
@@ -181,7 +187,33 @@ struct AppointmentDetailView: View {
                         // ── Recurrence ────────────────────────────────────
                         ParchmentFieldLabel(text: "Repeat")
                         ParchmentRecurrencePicker(rule: $appointment.recurrenceRule)
-                            .onChange(of: appointment.recurrenceRule) { _, _ in save() }
+                            .onChange(of: appointment.recurrenceRule) { _, _ in
+                                if appointment.recurrenceRule != "weekly" {
+                                    appointment.recurrenceDays = []
+                                }
+                                save()
+                            }
+
+                        if appointment.recurrenceRule == "weekly" {
+                            ParchmentWeekdayPicker(selectedDays: $appointment.recurrenceDays)
+                                .onChange(of: appointment.recurrenceDays) { _, _ in save() }
+                        }
+
+                        if !appointment.recurrenceRule.isEmpty {
+                            ParchmentEndDateRow(
+                                hasEndDate: Binding(
+                                    get: { appointment.recurrenceUntil != nil },
+                                    set: { on in
+                                        appointment.recurrenceUntil = on ? (appointment.recurrenceUntil ?? Date()) : nil
+                                        save()
+                                    }
+                                ),
+                                endDate: Binding(
+                                    get: { appointment.recurrenceUntil ?? Date() },
+                                    set: { appointment.recurrenceUntil = $0; save() }
+                                )
+                            )
+                        }
 
                         Divider().padding(.horizontal, 56).opacity(0.2).padding(.top, 4)
 

@@ -12,6 +12,9 @@ struct AddTaskView: View {
     @State private var priority: TaskPriority = .a
     @State private var notes = ""
     @State private var recurrenceRule = ""
+    @State private var recurrenceDays: [Int] = []
+    @State private var hasEndDate = false
+    @State private var recurrenceUntil = Date()
 
     private var nextNumber: Int {
         let samePriority = existingTasks.filter {
@@ -80,6 +83,14 @@ struct AddTaskView: View {
                         ParchmentFieldLabel(text: "Repeat")
                         ParchmentRecurrencePicker(rule: $recurrenceRule)
 
+                        if recurrenceRule == "weekly" {
+                            ParchmentWeekdayPicker(selectedDays: $recurrenceDays)
+                        }
+
+                        if !recurrenceRule.isEmpty {
+                            ParchmentEndDateRow(hasEndDate: $hasEndDate, endDate: $recurrenceUntil)
+                        }
+
                         Divider().padding(.horizontal, 56).opacity(0.2).padding(.top, 4)
 
                         // ── Notes ───────────────────────────────────────
@@ -121,6 +132,8 @@ struct AddTaskView: View {
         )
         task.notes = notes
         task.recurrenceRule = recurrenceRule
+        task.recurrenceDays = recurrenceRule == "weekly" ? recurrenceDays : []
+        task.recurrenceUntil = hasEndDate ? recurrenceUntil : nil
         modelContext.insert(task)
         try? modelContext.save()
         dismiss()

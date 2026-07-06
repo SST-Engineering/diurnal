@@ -31,6 +31,10 @@ final class DailyTask {
     var createdAt: Date
     // "" = no recurrence | "daily" | "weekly" | "monthly" | "yearly"
     var recurrenceRule: String = ""
+    // For weekly recurrence: Calendar weekday ints (1=Sun…7=Sat). Empty = use origin weekday.
+    var recurrenceDays: [Int] = []
+    // Optional stop date — recurrence ends on or before this day.
+    var recurrenceUntil: Date? = nil
     // For recurring tasks: ISO date strings ("YYYY-MM-DD") of days marked complete.
     // For non-recurring tasks this array is unused; isComplete/taskStatus are used instead.
     var completedDates: [String] = []
