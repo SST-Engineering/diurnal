@@ -176,6 +176,7 @@ struct ParchmentPriorityRow: View {
             }
             .padding(.horizontal, 56)
             .frame(height: kLineSpacing)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

@@ -31,6 +31,9 @@ final class DailyTask {
     var createdAt: Date
     // "" = no recurrence | "daily" | "weekly" | "monthly" | "yearly"
     var recurrenceRule: String = ""
+    // For recurring tasks: ISO date strings ("YYYY-MM-DD") of days marked complete.
+    // For non-recurring tasks this array is unused; isComplete/taskStatus are used instead.
+    var completedDates: [String] = []
 
     init(pageDate: Date, priority: TaskPriority, number: Int, title: String) {
         self.id = UUID()
@@ -55,5 +58,34 @@ final class DailyTask {
     var effectiveStatus: String {
         if isComplete && taskStatus == "notStarted" { return "completed" }
         return taskStatus
+    }
+
+    // MARK: - Per-date status (used for recurring tasks)
+
+    func effectiveStatus(for date: Date) -> String {
+        guard !recurrenceRule.isEmpty else { return effectiveStatus }
+        return completedDates.contains(isoDay(date)) ? "completed" : "notStarted"
+    }
+
+    func cycleStatus(for date: Date) {
+        if recurrenceRule.isEmpty {
+            switch effectiveStatus {
+            case "notStarted": taskStatus = "started";   isComplete = false
+            case "started":    taskStatus = "completed"; isComplete = true
+            default:           taskStatus = "notStarted"; isComplete = false
+            }
+        } else {
+            let key = isoDay(date)
+            if completedDates.contains(key) {
+                completedDates.removeAll { $0 == key }
+            } else {
+                completedDates.append(key)
+            }
+        }
+    }
+
+    private func isoDay(_ date: Date) -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
     }
 }

@@ -96,31 +96,21 @@ struct DailyPageView: View {
     // MARK: - Book layout (iPad / Mac)
 
     private var bookLayout: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.black.opacity(0.25))
-                .blur(radius: 12)
-                .padding(.horizontal, 8)
-                .padding(.top, 12)
+        HStack(spacing: 0) {
+            LeftPageView(
+                date: $date,
+                tasks: tasks,
+                appointments: appointments,
+                allTasks: allTasks,
+                onRollover: rollover
+            )
+            .frame(maxWidth: .infinity)
 
-            HStack(spacing: 0) {
-                LeftPageView(
-                    date: $date,
-                    tasks: tasks,
-                    appointments: appointments,
-                    allTasks: allTasks,
-                    onRollover: rollover
-                )
+            BookSpine()
+
+            RightPageView(date: $date, note: dailyNote)
                 .frame(maxWidth: .infinity)
-
-                BookSpine()
-
-                RightPageView(date: $date, note: dailyNote)
-                    .frame(maxWidth: .infinity)
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 4))
         }
-        .padding(24)
     }
 
     // MARK: - iPhone layout
@@ -219,7 +209,7 @@ struct LeftPageView: View {
                                 .padding(.horizontal, 56)
                                 .padding(.top, 6)
                             ForEach(group) { task in
-                                BookTaskRow(task: task)
+                                BookTaskRow(task: task, pageDate: date)
                                     .padding(.horizontal, 56)
                             }
                         }
@@ -402,7 +392,8 @@ struct RolloverButton: View {
     private var incompletYesterday: [DailyTask] {
         let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: date) ?? date
         return allTasks.filter {
-            Calendar.current.isDate($0.pageDate, inSameDayAs: yesterday) && !$0.isComplete
+            Calendar.current.isDate($0.pageDate, inSameDayAs: yesterday) &&
+            $0.effectiveStatus(for: yesterday) != "completed"
         }
     }
 
@@ -470,12 +461,13 @@ struct BookPriorityLabel: View {
 
 struct BookTaskRow: View {
     @Bindable var task: DailyTask
+    let pageDate: Date
     @Environment(\.modelContext) private var modelContext
     @State private var showDetail = false
     @State private var showMoveDate = false
     @State private var moveToDate = Date()
 
-    private var status: String { task.effectiveStatus }
+    private var status: String { task.effectiveStatus(for: pageDate) }
 
     private var priorityColor: Color {
         switch task.priorityEnum {
@@ -485,16 +477,9 @@ struct BookTaskRow: View {
         }
     }
 
-    /// Tap the status icon to cycle: not started → started → completed → not started
+    /// Tap the status icon to cycle using per-date logic for recurring tasks.
     private func cycleStatus() {
-        switch status {
-        case "notStarted":
-            task.taskStatus = "started";   task.isComplete = false
-        case "started":
-            task.taskStatus = "completed"; task.isComplete = true
-        default:
-            task.taskStatus = "notStarted"; task.isComplete = false
-        }
+        task.cycleStatus(for: pageDate)
         try? modelContext.save()
     }
 
